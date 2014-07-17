@@ -178,15 +178,6 @@ TYPED_TEST(NeuronLayerTest, TestDropoutGradientCPU) {
       &(this->blob_top_vec_));
 }
 
-TYPED_TEST(NeuronLayerTest, TestDropoutGradientCPUTest) {
-  LayerParameter layer_param;
-  Caffe::set_mode(Caffe::CPU);
-  Caffe::set_phase(Caffe::TEST);
-  DropoutLayer<TypeParam> layer(layer_param);
-  GradientChecker<TypeParam> checker(1e-2, 1e-3);
-  checker.CheckGradientEltwise(&layer, &(this->blob_bottom_vec_),
-      &(this->blob_top_vec_));
-}
 
 TYPED_TEST(NeuronLayerTest, TestDropoutCPUTestPhase) {
   LayerParameter layer_param;
@@ -198,6 +189,7 @@ TYPED_TEST(NeuronLayerTest, TestDropoutCPUTestPhase) {
   // Now, check values
   const TypeParam* bottom_data = this->blob_bottom_->cpu_data();
   const TypeParam* top_data = this->blob_top_->cpu_data();
+  float scale = 1. / (1. - layer_param.dropout_param().dropout_ratio());
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
     if (top_data[i] != 0) {
       EXPECT_EQ(top_data[i], bottom_data[i]);
@@ -226,6 +218,7 @@ TYPED_TEST(NeuronLayerTest, TestDropoutGPU) {
 
 
 TYPED_TEST(NeuronLayerTest, TestDropoutGradientGPU) {
+  if (CAFFE_TEST_CUDA_PROP.major >= 2) {
     LayerParameter layer_param;
     Caffe::set_mode(Caffe::GPU);
     Caffe::set_phase(Caffe::TRAIN);
@@ -235,18 +228,9 @@ TYPED_TEST(NeuronLayerTest, TestDropoutGradientGPU) {
     // exhaustive gradient check.
     checker.CheckGradient(&layer, &(this->blob_bottom_vec_),
         &(this->blob_top_vec_));
-}
-
-TYPED_TEST(NeuronLayerTest, TestDropoutGradientGPUTest) {
-    LayerParameter layer_param;
-    Caffe::set_mode(Caffe::GPU);
-    Caffe::set_phase(Caffe::TEST);
-    DropoutLayer<TypeParam> layer(layer_param);
-    GradientChecker<TypeParam> checker(1e-2, 1e-3);
-    // it is too expensive to call curand multiple times, so we don't do an
-    // exhaustive gradient check.
-    checker.CheckGradient(&layer, &(this->blob_bottom_vec_),
-        &(this->blob_top_vec_));
+  } else {
+    LOG(ERROR) << "Skipping test to spare my laptop.";
+  }
 }
 
 
@@ -260,6 +244,7 @@ TYPED_TEST(NeuronLayerTest, TestDropoutGPUTestPhase) {
   // Now, check values
   const TypeParam* bottom_data = this->blob_bottom_->cpu_data();
   const TypeParam* top_data = this->blob_top_->cpu_data();
+  float scale = 1. / (1. - layer_param.dropout_param().dropout_ratio());
   for (int i = 0; i < this->blob_bottom_->count(); ++i) {
     if (top_data[i] != 0) {
       EXPECT_EQ(top_data[i], bottom_data[i]);

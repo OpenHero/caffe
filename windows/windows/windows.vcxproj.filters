@@ -69,9 +69,6 @@
     <ClCompile Include="..\..\src\caffe\layers\accuracy_layer.cpp">
       <Filter>src\layers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\caffe\layers\argmax_layer.cpp">
-      <Filter>src\layers</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\caffe\layers\bnll_layer.cpp">
       <Filter>src\layers</Filter>
     </ClCompile>
@@ -85,12 +82,6 @@
       <Filter>src\layers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\caffe\layers\dropout_layer.cpp">
-      <Filter>src\layers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\caffe\layers\dummy_data_layer.cpp">
-      <Filter>src\layers</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\caffe\layers\eltwise_layer.cpp">
       <Filter>src\layers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\caffe\layers\euclidean_loss_layer.cpp">
@@ -162,10 +153,10 @@
     <ClCompile Include="..\..\src\caffe\layers\tanh_layer.cpp">
       <Filter>src\layers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\caffe\layers\threshold_layer.cpp">
+    <ClCompile Include="..\..\src\caffe\layers\window_data_layer.cpp">
       <Filter>src\layers</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\caffe\layers\window_data_layer.cpp">
+    <ClCompile Include="..\..\src\caffe\layers\eltwise_product_layer.cpp">
       <Filter>src\layers</Filter>
     </ClCompile>
   </ItemGroup>
@@ -189,12 +180,6 @@
       <Filter>src\layers</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\src\caffe\layers\dropout_layer.cu">
-      <Filter>src\layers</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\src\caffe\layers\eltwise_layer.cu">
-      <Filter>src\layers</Filter>
-    </CudaCompile>
-    <CudaCompile Include="..\..\src\caffe\layers\euclidean_loss_layer.cu">
       <Filter>src\layers</Filter>
     </CudaCompile>
     <CudaCompile Include="..\..\src\caffe\layers\flatten_layer.cu">
@@ -245,10 +230,10 @@
     <CudaCompile Include="..\..\src\caffe\layers\tanh_layer.cu">
       <Filter>src\layers</Filter>
     </CudaCompile>
-    <CudaCompile Include="..\..\src\caffe\layers\threshold_layer.cu">
+    <CudaCompile Include="..\..\src\caffe\layers\window_data_layer.cu">
       <Filter>src\layers</Filter>
     </CudaCompile>
-    <CudaCompile Include="..\..\src\caffe\layers\window_data_layer.cu">
+    <CudaCompile Include="..\..\src\caffe\layers\eltwise_product_layer.cu">
       <Filter>src\layers</Filter>
     </CudaCompile>
   </ItemGroup>

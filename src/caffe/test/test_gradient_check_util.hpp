@@ -86,7 +86,6 @@ void GradientChecker<Dtype>::CheckGradientSingle(Layer<Dtype>* layer,
   }
   // First, figure out what blobs we need to check against.
   vector<Blob<Dtype>*> blobs_to_check;
-  vector<bool> propagate_down(bottom->size(), check_bottom < 0);
   for (int i = 0; i < layer->blobs().size(); ++i) {
     blobs_to_check.push_back(layer->blobs()[i].get());
   }
@@ -95,9 +94,8 @@ void GradientChecker<Dtype>::CheckGradientSingle(Layer<Dtype>* layer,
       blobs_to_check.push_back((*bottom)[i]);
     }
   } else {
-    CHECK_LT(check_bottom, bottom->size());
+    CHECK(check_bottom < bottom->size());
     blobs_to_check.push_back((*bottom)[check_bottom]);
-    propagate_down[check_bottom] = true;
   }
   // Compute the gradient analytically using Backward
   Caffe::set_random_seed(seed_);
@@ -105,7 +103,7 @@ void GradientChecker<Dtype>::CheckGradientSingle(Layer<Dtype>* layer,
   Dtype computed_objective = layer->Forward(*bottom, top);
   // Get additional loss from the objective
   computed_objective += GetObjAndGradient(top, top_id, top_data_id);
-  layer->Backward(*top, propagate_down, bottom);
+  layer->Backward(*top, true, bottom);
   // Store computed gradients for all checked blobs
   vector<shared_ptr<Blob<Dtype> > >
       computed_gradient_blobs(blobs_to_check.size());
@@ -230,7 +228,7 @@ Dtype GradientChecker<Dtype>::GetObjAndGradient(vector<Blob<Dtype>*>* top,
         loss += top_blob_data[j] * top_blob_data[j];
       }
       // set the diff: simply the data.
-      caffe_copy(top_blob->count(), top_blob_data, top_blob_diff);
+      memcpy(top_blob_diff, top_blob_data, sizeof(Dtype) * top_blob->count());
     }
     loss /= 2.;
   } else {
@@ -238,7 +236,7 @@ Dtype GradientChecker<Dtype>::GetObjAndGradient(vector<Blob<Dtype>*>* top,
     for (int i = 0; i < top->size(); ++i) {
       Blob<Dtype>* top_blob = (*top)[i];
       Dtype* top_blob_diff = top_blob->mutable_cpu_diff();
-      caffe_set(top_blob->count(), Dtype(0), top_blob_diff);
+      memset(top_blob_diff, 0, sizeof(Dtype) * top_blob->count());
     }
     loss = (*top)[top_id]->cpu_data()[top_data_id];
     (*top)[top_id]->mutable_cpu_diff()[top_data_id] = 1.;

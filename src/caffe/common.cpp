@@ -3,12 +3,12 @@
 #include <cstdio>
 #include <ctime>
 
-#include "caffe/common.hpp"
-#include "caffe/util/rng.hpp"
-
 #if _MSC_VER
 #include <process.h>
 #endif
+
+#include "caffe/common.hpp"
+#include "caffe/util/rng.hpp"
 
 namespace caffe {
 

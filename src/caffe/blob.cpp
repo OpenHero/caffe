@@ -75,25 +75,25 @@ const Dtype* Blob<Dtype>::gpu_diff() const {
 template <typename Dtype>
 Dtype* Blob<Dtype>::mutable_cpu_data() {
   CHECK(data_);
-  return static_cast<Dtype*>(data_->mutable_cpu_data());
+  return reinterpret_cast<Dtype*>(data_->mutable_cpu_data());
 }
 
 template <typename Dtype>
 Dtype* Blob<Dtype>::mutable_gpu_data() {
   CHECK(data_);
-  return static_cast<Dtype*>(data_->mutable_gpu_data());
+  return reinterpret_cast<Dtype*>(data_->mutable_gpu_data());
 }
 
 template <typename Dtype>
 Dtype* Blob<Dtype>::mutable_cpu_diff() {
   CHECK(diff_);
-  return static_cast<Dtype*>(diff_->mutable_cpu_data());
+  return reinterpret_cast<Dtype*>(diff_->mutable_cpu_data());
 }
 
 template <typename Dtype>
 Dtype* Blob<Dtype>::mutable_gpu_diff() {
   CHECK(diff_);
-  return static_cast<Dtype*>(diff_->mutable_gpu_data());
+  return reinterpret_cast<Dtype*>(diff_->mutable_gpu_data());
 }
 
 template <typename Dtype>
@@ -108,12 +108,6 @@ void Blob<Dtype>::ShareDiff(const Blob& other) {
   diff_ = other.diff();
 }
 
-// The "update" method is used for parameter blobs in a Net, which are stored
-// as Blob<float> or Blob<double> -- hence we do not define it for
-// Blob<int> or Blob<unsigned int>.
-template <> void Blob<unsigned int>::Update() { NOT_IMPLEMENTED; }
-template <> void Blob<int>::Update() { NOT_IMPLEMENTED; }
-
 template <typename Dtype>
 void Blob<Dtype>::Update() {
   // We will perform update based on where the data is located.
@@ -121,15 +115,15 @@ void Blob<Dtype>::Update() {
   case SyncedMemory::HEAD_AT_CPU:
     // perform computation on CPU
     caffe_axpy<Dtype>(count_, Dtype(-1),
-        static_cast<const Dtype*>(diff_->cpu_data()),
-        static_cast<Dtype*>(data_->mutable_cpu_data()));
+        reinterpret_cast<const Dtype*>(diff_->cpu_data()),
+        reinterpret_cast<Dtype*>(data_->mutable_cpu_data()));
     break;
   case SyncedMemory::HEAD_AT_GPU:
   case SyncedMemory::SYNCED:
     // perform computation on GPU
     caffe_gpu_axpy<Dtype>(count_, Dtype(-1),
-        static_cast<const Dtype*>(diff_->gpu_data()),
-        static_cast<Dtype*>(data_->mutable_gpu_data()));
+        reinterpret_cast<const Dtype*>(diff_->gpu_data()),
+        reinterpret_cast<Dtype*>(data_->mutable_gpu_data()));
     break;
   default:
     LOG(FATAL) << "Syncedmem not initialized.";
@@ -149,20 +143,20 @@ void Blob<Dtype>::CopyFrom(const Blob& source, bool copy_diff, bool reshape) {
   switch (Caffe::mode()) {
   case Caffe::GPU:
     if (copy_diff) {
-      caffe_copy(count_, source.gpu_diff(),
-          static_cast<Dtype*>(diff_->mutable_gpu_data()));
+      CUDA_CHECK(cudaMemcpy(diff_->mutable_gpu_data(), source.gpu_diff(),
+          sizeof(Dtype) * count_, cudaMemcpyDeviceToDevice));
     } else {
-      caffe_copy(count_, source.gpu_data(),
-          static_cast<Dtype*>(data_->mutable_gpu_data()));
+      CUDA_CHECK(cudaMemcpy(data_->mutable_gpu_data(), source.gpu_data(),
+          sizeof(Dtype) * count_, cudaMemcpyDeviceToDevice));
     }
     break;
   case Caffe::CPU:
     if (copy_diff) {
-      caffe_copy(count_, source.cpu_diff(),
-          static_cast<Dtype*>(diff_->mutable_cpu_data()));
+      memcpy(diff_->mutable_cpu_data(), source.cpu_diff(),
+          sizeof(Dtype) * count_);
     } else {
-      caffe_copy(count_, source.cpu_data(),
-          static_cast<Dtype*>(data_->mutable_cpu_data()));
+      memcpy(data_->mutable_cpu_data(), source.cpu_data(),
+        sizeof(Dtype) * count_);
     }
     break;
   default:
@@ -207,8 +201,6 @@ void Blob<Dtype>::ToProto(BlobProto* proto, bool write_diff) const {
 }
 
 INSTANTIATE_CLASS(Blob);
-template class Blob<int>;
-template class Blob<unsigned int>;
 
 }  // namespace caffe
 

@@ -140,7 +140,8 @@ ImageDataLayer<Dtype>::~ImageDataLayer<Dtype>() {
 template <typename Dtype>
 void ImageDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top) {
-  Layer<Dtype>::SetUp(bottom, top);
+  CHECK_EQ(bottom.size(), 0) << "Input Layer takes no input blobs.";
+  CHECK_EQ(top->size(), 2) << "Input Layer takes two blobs as output.";
   const int new_height  = this->layer_param_.image_data_param().new_height();
   const int new_width  = this->layer_param_.image_data_param().new_height();
   CHECK((new_height == 0 && new_width == 0) ||
@@ -236,7 +237,9 @@ void ImageDataLayer<Dtype>::CreatePrefetchThread() {
   phase_ = Caffe::phase();
   const bool prefetch_needs_rand =
       this->layer_param_.image_data_param().shuffle() ||
-      this->layer_param_.image_data_param().crop_size();
+          ((phase_ == Caffe::TRAIN) &&
+           (this->layer_param_.image_data_param().mirror() ||
+            this->layer_param_.image_data_param().crop_size()));
   if (prefetch_needs_rand) {
     const unsigned int prefetch_rng_seed = caffe_rng_rand();
     prefetch_rng_.reset(new Caffe::RNG(prefetch_rng_seed));

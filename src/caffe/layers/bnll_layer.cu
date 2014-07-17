@@ -45,9 +45,9 @@ __global__ void BNLLBackward(const int n, const Dtype* in_diff,
 
 template <typename Dtype>
 void BNLLLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
+    const bool propagate_down,
     vector<Blob<Dtype>*>* bottom) {
-  if (propagate_down[0]) {
+  if (propagate_down) {
     const Dtype* bottom_data = (*bottom)[0]->gpu_data();
     const Dtype* top_diff = top[0]->gpu_diff();
     Dtype* bottom_diff = (*bottom)[0]->mutable_gpu_diff();

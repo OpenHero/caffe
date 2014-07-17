@@ -49,9 +49,9 @@ Dtype PowerLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void PowerLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
+    const bool propagate_down,
     vector<Blob<Dtype>*>* bottom) {
-  if (propagate_down[0]) {
+  if (propagate_down) {
     Dtype* bottom_diff = (*bottom)[0]->mutable_cpu_diff();
     const int count = (*bottom)[0]->count();
     const Dtype* top_diff = top[0]->cpu_diff();

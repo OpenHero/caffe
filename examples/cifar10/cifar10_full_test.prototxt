@@ -167,16 +167,15 @@ layers {
   }
 }
 layers {
-  name: "accuracy"
-  type: ACCURACY
+  name: "prob"
+  type: SOFTMAX
   bottom: "ip1"
-  bottom: "label"
-  top: "accuracy"
+  top: "prob"
 }
 layers {
-  name: "loss"
-  type: SOFTMAX_LOSS
-  bottom: "ip1"
+  name: "accuracy"
+  type: ACCURACY
+  bottom: "prob"
   bottom: "label"
-  top: "loss"
+  top: "accuracy"
 }

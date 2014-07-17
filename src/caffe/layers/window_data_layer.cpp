@@ -22,14 +22,15 @@
 #include "caffe/util/rng.hpp"
 #include "caffe/vision_layers.hpp"
 
+#if _MSC_VER < 1800
+inline double round(double x) {
+	return (x > 0.0) ? floor(x + 0.5) : ceil(x - 0.5);
+}
+#endif
+
 using std::string;
 using std::map;
 using std::pair;
-
-#if _MSC_VER < 1800
-inline double round(double x) { return (x > 0.0) ? floor(x + 0.5) : ceil(x - 0.5); }
-#endif
-
 
 // caffe.proto > LayerParameter > WindowDataParameter
 //   'source' field specifies the window_file
@@ -64,7 +65,7 @@ void* WindowDataLayerPrefetch(void* layer_pointer) {
   bool use_square = (crop_mode == "square") ? true : false;
 
   // zero out batch
-  caffe_set(layer->prefetch_data_->count(), Dtype(0), top_data);
+  memset(top_data, 0, sizeof(Dtype)*layer->prefetch_data_->count());
 
   const int num_fg = static_cast<int>(static_cast<float>(batch_size)
       * fg_fraction);
@@ -263,11 +264,13 @@ WindowDataLayer<Dtype>::~WindowDataLayer<Dtype>() {
 template <typename Dtype>
 void WindowDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top) {
-  Layer<Dtype>::SetUp(bottom, top);
   // SetUp runs through the window_file and creates two structures
   // that hold windows: one for foreground (object) windows and one
   // for background (non-object) windows. We use an overlap threshold
   // to decide which is which.
+
+  CHECK_EQ(bottom.size(), 0) << "Window data Layer takes no input blobs.";
+  CHECK_EQ(top->size(), 2) << "Window data Layer prodcues two blobs as output.";
 
   // window_file format
   // repeated:
@@ -296,10 +299,7 @@ void WindowDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
 
   string hashtag;
   int image_index, channels;
-  if (!(infile >> hashtag >> image_index)) {
-    LOG(FATAL) << "Window file is empty";
-  }
-  do {
+  while (infile >> hashtag >> image_index) {
     CHECK_EQ(hashtag, "#");
     // read image path
     string image_path;
@@ -355,7 +355,7 @@ void WindowDataLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
           << image_size[2] << " "
           << "windows to process: " << num_windows;
     }
-  } while (infile >> hashtag >> image_index);
+  }
 
   LOG(INFO) << "Number of images: " << image_index+1;
 

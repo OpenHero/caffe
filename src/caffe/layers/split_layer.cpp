@@ -11,7 +11,8 @@ namespace caffe {
 template <typename Dtype>
 void SplitLayer<Dtype>::SetUp(const vector<Blob<Dtype>*>& bottom,
       vector<Blob<Dtype>*>* top) {
-  Layer<Dtype>::SetUp(bottom, top);
+  CHECK_EQ(bottom.size(), 1) << "Split Layer takes a single blob as input.";
+  CHECK_GE(top->size(), 1) << "Split Layer takes at least one blob as output.";
   count_ = bottom[0]->count();
   for (int i = 0; i < top->size(); ++i) {
     // Allow the 0th top blob to be 'in-place', but no others.
@@ -37,8 +38,8 @@ Dtype SplitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void SplitLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, vector<Blob<Dtype>*>* bottom) {
-  if (propagate_down[0]) {
+      const bool propagate_down, vector<Blob<Dtype>*>* bottom) {
+  if (propagate_down) {
     (*bottom)[0]->ShareDiff(*top[0]);
     // Add remaining top blob diffs.
     Dtype* bottom_diff = (*bottom)[0]->mutable_cpu_diff();
