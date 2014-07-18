@@ -174,6 +174,9 @@ else
 	COMMON_FLAGS := -DNDEBUG -O2
 endif
 
+# LMDB
+CXXFLAGS += -DUSE_LMDB
+
 # BLAS configuration (default = ATLAS)
 BLAS ?= atlas
 ifeq ($(BLAS), mkl)
