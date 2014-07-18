@@ -15,6 +15,30 @@
 *.la
 *.a
 
+# Compiled Windows
+*.bsc
+*.cache
+*.deps
+*.dll
+*.exe
+*.idb
+*.ilk
+*.lastbuildstate
+*.lib
+*.log
+*.obj
+*.sbr
+*.tlog
+*.suo
+*.sdf
+*.unsuccessfulbuild
+*.user
+*.pdb
+*.dgml
+*.exp
+*.pyd
+
+
 # Compiled protocol buffers
 *.pb.h
 *.pb.cc
@@ -61,4 +85,3 @@ _site
 # Sublime Text settings
 *.sublime-workspace
 *.sublime-project
-
