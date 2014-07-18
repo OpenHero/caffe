@@ -1,6 +1,10 @@
 // Copyright 2014 BVLC and contributors.
 #include <stdint.h>
 #include <fcntl.h>
+#ifdef _MSC_VER
+#include <io.h>
+#endif
+
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -14,18 +18,10 @@
 #include <vector>
 #include <fstream>  // NOLINT(readability/streams)
 
-#ifdef _MSC_VER
-#include <io.h>
-#endif
-
 
 #include "caffe/common.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/proto/caffe.pb.h"
-
-#ifdef _MSC_VER
-#include <io.h>
-#endif
 
 using std::fstream;
 using std::ios;

@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <ctime>
 
-#if _MSC_VER
+#ifdef _MSC_VER
 #include <process.h>
 #endif
 
@@ -14,11 +14,10 @@ namespace caffe {
 
 shared_ptr<Caffe> Caffe::singleton_;
 
-
 // curand seeding
 int64_t cluster_seedgen(void) {
   int64_t s, seed, pid;
-#if _MSC_VER
+#ifdef _MSC_VER
   pid = _getpid();
 #else
   pid = getpid();
@@ -46,8 +45,8 @@ Caffe::Caffe()
     LOG(ERROR) << "Cannot create Curand generator. Curand won't be available.";
   }
   int device; 
-  if(cudaSuccess == cudaGetDevice(&device)) {
-	  CUDA_CHECK(cudaGetDeviceProperties(&prop, device));
+  if (cudaSuccess == cudaGetDevice(&device)) {
+    CUDA_CHECK(cudaGetDeviceProperties(&prop, device));
   }
 }
 
