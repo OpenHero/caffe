@@ -20,7 +20,7 @@ namespace std {
   __host__ __device__ inline bool signbit(double num) {
     return _copysign(1.0, num) < 0;
     }
-} // namespace std
+}  // namespace std
 #endif
 #endif
 
