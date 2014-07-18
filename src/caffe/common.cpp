@@ -44,7 +44,7 @@ Caffe::Caffe()
       != CURAND_STATUS_SUCCESS) {
     LOG(ERROR) << "Cannot create Curand generator. Curand won't be available.";
   }
-  int device; 
+  int device;
   if (cudaSuccess == cudaGetDevice(&device)) {
     CUDA_CHECK(cudaGetDeviceProperties(&prop, device));
   }

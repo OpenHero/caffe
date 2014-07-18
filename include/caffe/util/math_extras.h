@@ -8,8 +8,8 @@
 // around various differences in behavior of Inf.
 #if _MSC_VER < 1800
 namespace std {
-  inline bool signbit(float num) { return _copysign(1.0f, num) < 0; }
-  inline bool signbit(double num) { return _copysign(1.0, num) < 0; }
+  inline bool signbit(float num);
+  inline bool signbit(double num);
 } // namespace std
 
 #endif // _MSC_VER < 1800
