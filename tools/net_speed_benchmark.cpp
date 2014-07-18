@@ -64,8 +64,6 @@ int main(int argc, char** argv) {
   const vector<shared_ptr<Layer<float> > >& layers = caffe_net.layers();
   vector<vector<Blob<float>*> >& bottom_vecs = caffe_net.bottom_vecs();
   vector<vector<Blob<float>*> >& top_vecs = caffe_net.top_vecs();
-  const vector<vector<bool> >& bottom_need_backward =
-      caffe_net.bottom_need_backward();
   LOG(ERROR) << "*** Benchmark begins ***";
   Timer total_timer;
   total_timer.Start();
@@ -89,8 +87,7 @@ int main(int argc, char** argv) {
     const string& layername = layers[i]->layer_param().name();
     timer.Start();
     for (int j = 0; j < total_iter; ++j) {
-      layers[i]->Backward(top_vecs[i], bottom_need_backward[i],
-                          &bottom_vecs[i]);
+      layers[i]->Backward(top_vecs[i], true, &bottom_vecs[i]);
     }
     LOG(ERROR) << layername << "\tbackward: "
         << timer.MilliSeconds() << " milli seconds.";
