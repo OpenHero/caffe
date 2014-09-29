@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\tools\train_net.cpp" />
+    <ClCompile Include="..\..\tools\caffe.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{22869C0E-5BCB-462A-8D67-FD336356DA49}</ProjectGuid>
@@ -37,7 +37,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v110</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -76,8 +76,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\pthreads\Pre-built.2\include;D:\glog-0.3.3\src\windows;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.0\include;..\..\include;D:\boost_1_55_x64\boost_1_55_0;C:\Program Files %28x86%29\Intel\Composer XE 2013\mkl\include;D:\protobuf-2.5.0\src;D:\leveldb-master\include;D:\HDF_Group\HDF5\1.8.13\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.0\lib\x64;D:\boost_1_55_x64\boost_1_55_0\lib64-msvc-11.0;..\..\windows\x64\Debug;..\..\windows\windows;C:\Program Files (x86)\Intel\Composer XE 2013\mkl\lib\intel64;D:\opencv\build\x64\vc11\lib;C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE;D:\pthreads\Pre-built.2\lib\x64;D:\protobuf-2.5.0\vsprojects\x64\Debug;D:\leveldb-master\build\x64\Debug;D:\glog-0.3.3\x64\Debug;D:\HDF_Group\HDF5\1.8.13\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\pthreads\Pre-built.2\include;D:\glog-0.3.3\src\windows;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.0\include;..\..\include;D:\boost_1_55_x64\boost_1_55_0;C:\Program Files %28x86%29\Intel\Composer XE 2013\mkl\include;D:\protobuf-2.5.0\src;D:\leveldb-master\include;D:\gflags\gflags\build\include;D:\HDF_Group\HDF5\1.8.13\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.0\lib\x64;D:\boost_1_55_x64\boost_1_55_0\lib64-msvc-11.0;..\..\windows\x64\Debug;..\..\windows\windows;C:\Program Files (x86)\Intel\Composer XE 2013\mkl\lib\intel64;D:\opencv\build\x64\vc11\lib;C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE;D:\pthreads\Pre-built.2\lib\x64;D:\protobuf-2.5.0\vsprojects\x64\Debug;D:\leveldb-master\build\x64\Debug;D:\glog-0.3.3\x64\Debug;D:\HDF_Group\HDF5\1.8.13\lib;D:\gflags\gflags\build\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -114,14 +114,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>USE_MKL;WIN64;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <OpenMPSupport>true</OpenMPSupport>
       <BrowseInformation>true</BrowseInformation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>mkl_blacs_lp64_dll.lib;mkl_blacs_ilp64_dll.lib;mkl_intel_ilp64.lib;mkl_sequential.lib;mkl_intel_thread.lib;mkl_core.lib;pthreadVC2.lib;opencv_highgui246d.lib;opencv_core246d.lib;opencv_imgproc246d.lib;curand.lib;cudart.lib;cuda.lib;cublas.lib;libglog.lib;caffe.lib;leveldbd.lib;libprotobuf.lib;boost_chrono-vc110-mt-gd-1_55.lib;boost_filesystem-vc110-mt-gd-1_55.lib;boost_system-vc110-mt-gd-1_55.lib;boost_thread-vc110-mt-gd-1_55.lib;hdf5_hl.lib;hdf5.lib</AdditionalDependencies>
+      <AdditionalDependencies>Shlwapi.lib;gflags.lib;mkl_blacs_lp64_dll.lib;mkl_blacs_ilp64_dll.lib;mkl_intel_ilp64.lib;mkl_sequential.lib;mkl_intel_thread.lib;mkl_core.lib;pthreadVC2.lib;opencv_highgui246d.lib;opencv_core246d.lib;opencv_imgproc246d.lib;curand.lib;cudart.lib;cuda.lib;cublas.lib;libglog.lib;caffe.lib;leveldbd.lib;libprotobuf.lib;boost_chrono-vc110-mt-gd-1_55.lib;boost_filesystem-vc110-mt-gd-1_55.lib;boost_system-vc110-mt-gd-1_55.lib;boost_thread-vc110-mt-gd-1_55.lib;hdf5_hl.lib;hdf5.lib</AdditionalDependencies>
     </Link>
     <Bscmake>
       <PreserveSbr>true</PreserveSbr>

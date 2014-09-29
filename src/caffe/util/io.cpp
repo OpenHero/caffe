@@ -1,32 +1,25 @@
-// Copyright 2014 BVLC and contributors.
-#include <stdint.h>
 #include <fcntl.h>
-#ifdef _MSC_VER
-#include <io.h>
-#endif
-
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/text_format.h>
+#include <leveldb/db.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <stdint.h>
 
 #include <algorithm>
+#include <fstream>  // NOLINT(readability/streams)
 #include <string>
 #include <vector>
-#include <fstream>  // NOLINT(readability/streams)
-
 
 #include "caffe/common.hpp"
-#include "caffe/util/io.hpp"
 #include "caffe/proto/caffe.pb.h"
+#include "caffe/util/io.hpp"
 
-using std::fstream;
-using std::ios;
-using std::max;
-using std::string;
+namespace caffe {
+
 using google::protobuf::io::FileInputStream;
 using google::protobuf::io::FileOutputStream;
 using google::protobuf::io::ZeroCopyInputStream;
@@ -34,8 +27,6 @@ using google::protobuf::io::CodedInputStream;
 using google::protobuf::io::ZeroCopyOutputStream;
 using google::protobuf::io::CodedOutputStream;
 using google::protobuf::Message;
-
-namespace caffe {
 
 bool ReadProtoFromTextFile(const char* filename, Message* proto) {
   int fd = open(filename, O_RDONLY);
@@ -56,11 +47,7 @@ void WriteProtoToTextFile(const Message& proto, const char* filename) {
 }
 
 bool ReadProtoFromBinaryFile(const char* filename, Message* proto) {
-#ifdef _MSC_VER
-  int fd = open(filename, O_RDONLY | O_BINARY);
-#else
   int fd = open(filename, O_RDONLY);
-#endif
   CHECK_NE(fd, -1) << "File not found: " << filename;
   ZeroCopyInputStream* raw_input = new FileInputStream(fd);
   CodedInputStream* coded_input = new CodedInputStream(raw_input);
@@ -84,16 +71,18 @@ bool ReadImageToDatum(const string& filename, const int label,
   cv::Mat cv_img;
   int cv_read_flag = (is_color ? CV_LOAD_IMAGE_COLOR :
     CV_LOAD_IMAGE_GRAYSCALE);
-  if (height > 0 && width > 0) {
-    cv::Mat cv_img_origin = cv::imread(filename, cv_read_flag);
-    cv::resize(cv_img_origin, cv_img, cv::Size(height, width));
-  } else {
-    cv_img = cv::imread(filename, cv_read_flag);
-  }
-  if (!cv_img.data) {
+
+  cv::Mat cv_img_origin = cv::imread(filename, cv_read_flag);
+  if (!cv_img_origin.data) {
     LOG(ERROR) << "Could not open or find file " << filename;
     return false;
   }
+  if (height > 0 && width > 0) {
+    cv::resize(cv_img_origin, cv_img, cv::Size(width, height));
+  } else {
+    cv_img = cv_img_origin;
+  }
+
   int num_channels = (is_color ? 3 : 1);
   datum->set_channels(num_channels);
   datum->set_height(cv_img.rows);
@@ -120,6 +109,14 @@ bool ReadImageToDatum(const string& filename, const int label,
       }
   }
   return true;
+}
+
+leveldb::Options GetLevelDBOptions() {
+  // In default, we will return the leveldb option and set the max open files
+  // in order to avoid using up the operating system's limit.
+  leveldb::Options options;
+  options.max_open_files = 100;
+  return options;
 }
 
 // Verifies format of data stored in HDF5 file and reshapes blob accordingly.

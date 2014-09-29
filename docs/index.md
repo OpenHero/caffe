@@ -1,10 +1,11 @@
 ---
-layout: default
+title: Deep Learning Framework
 ---
+
 # Caffe
 
 Caffe is a deep learning framework developed with cleanliness, readability, and speed in mind.
-It was created by [Yangqing Jia](http://daggerfs.com), and is in active development by the Berkeley Vision and Learning Center ([BVLC](http://bvlc.eecs.berkeley.edu)) and by community contributors.
+It was created by [Yangqing Jia](http://daggerfs.com) during his PhD at UC Berkeley, and is in active development by the Berkeley Vision and Learning Center ([BVLC](http://bvlc.eecs.berkeley.edu)) and by community contributors.
 Caffe is released under the [BSD 2-Clause license](https://github.com/BVLC/caffe/blob/master/LICENSE).
 
 Check out our web image classification [demo](http://demo.caffe.berkeleyvision.org)!
@@ -33,31 +34,33 @@ Consult performance [details](/performance_hardware.html).
 
 ## Documentation
 
-- [Introductory slides](http://dl.caffe.berkeleyvision.org/caffe-presentation.pdf)<br />
-Slides about the Caffe architecture, *updated 03/14*.
-- [ACM MM paper](http://ucb-icsi-vision-group.github.io/caffe-paper/caffe.pdf)<br />
+- [DIY Deep Learning for Vision with Caffe](https://docs.google.com/presentation/d/1UeKXVgRvvxg9OUdh_UiC5G71UMscNPlvArsWER41PsU/edit#slide=id.p)<br>
+Caffe tutorial slides.
+- [ACM MM paper](http://ucb-icsi-vision-group.github.io/caffe-paper/caffe.pdf)<br>
 A 4-page report for the ACM Multimedia Open Source competition.
-- [Installation instructions](/installation.html)<br />
+- [Caffe Tutorial](/tutorial)<br>
+DIY deep learning with this hands-on tutorial to Caffe.
+- [Installation instructions](/installation.html)<br>
 Tested on Ubuntu, Red Hat, OS X.
-* [Pre-trained models](/getting_pretrained_models.html)<br />
-BVLC provides ready-to-use models for non-commercial use.
-* [Developing & Contributing](/development.html)<br />
+* [Model Zoo](/model_zoo.html)<br>
+BVLC suggests a standard distribution format for Caffe models, and provides trained models.
+* [Developing & Contributing](/development.html)<br>
 Guidelines for development and contributing to Caffe.
+* [API Documentation](/doxygen/)<br>
+Developer documentation automagically generated from code comments.
 
 ### Examples
 
-{% for page in site.pages %}
-{% if page.category == 'example' %}
-- <div><a href="{{page.url}}">{{page.title}}</a><br />{{page.description}}</div>
-{% endif %}
+{% assign examples = site.pages | where:'category','example' | sort: 'priority' %}
+{% for page in examples %}
+- <div><a href="{{page.url}}">{{page.title}}</a><br>{{page.description}}</div>
 {% endfor %}
 
 ### Notebook examples
 
-{% for page in site.pages %}
-{% if page.category == 'notebook' %}
-- <div><a href="http://nbviewer.ipython.org/github/BVLC/caffe/blob/master/{{page.original_path}}">{{page.title}}</a><br />{{page.description}}</div>
-{% endif %}
+{% assign notebooks = site.pages | where:'category','notebook' | sort: 'priority' %}
+{% for page in notebooks %}
+- <div><a href="http://nbviewer.ipython.org/github/BVLC/caffe/blob/master/{{page.original_path}}">{{page.title}}</a><br>{{page.description}}</div>
 {% endfor %}
 
 ## Citing Caffe
@@ -68,7 +71,7 @@ Please cite Caffe in your publications if it helps your research:
        Author = {Yangqing Jia},
        Title = { {Caffe}: An Open Source Convolutional Architecture for Fast Feature Embedding},
        Year  = {2013},
-       Howpublished = {\url{http://caffe.berkeleyvision.org/}
+       Howpublished = {\url{http://caffe.berkeleyvision.org/}}
     }
 
 If you do publish a paper where Caffe helped your research, we encourage you to update the [publications wiki](https://github.com/BVLC/caffe/wiki/Publications).
@@ -89,9 +92,11 @@ If you'd like to contribute, please read the [developing & contributing](develop
 
 ## Contacting us
 
-All questions about installation, code, future development, and applications should be searched for and asked at [GitHub Issues](https://github.com/BVLC/caffe/issues).
+All questions about usage, installation, code, and applications should be searched for and asked on the [caffe-users mailing list](https://groups.google.com/forum/#!forum/caffe-users).
+
+All development discussion should be carried out at [GitHub Issues](https://github.com/BVLC/caffe/issues).
 
 If you have a proposal that may not be suited for public discussion *and an ability to act on it*, please email us [directly](mailto:caffe-dev@googlegroups.com).
 Requests for features, explanations, or personal help will be ignored; post such matters publicly as issues.
 
-Some developers may be able to provide [consulting services](mailto:caffe-coldpress@googlegroups.com) for appropriate projects.
+The core Caffe developers may be able to provide [consulting services](mailto:caffe-coldpress@googlegroups.com) for appropriate projects.

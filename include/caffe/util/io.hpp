@@ -1,23 +1,65 @@
-// Copyright 2014 BVLC and contributors.
-
 #ifndef CAFFE_UTIL_IO_H_
 #define CAFFE_UTIL_IO_H_
-
+#ifdef _MSC_VER
+#include <io.h>
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
 #include <string>
 
 #include "google/protobuf/message.h"
 #include "hdf5.h"
 #include "hdf5_hl.h"
-#include "caffe/proto/caffe.pb.h"
 
 #include "caffe/blob.hpp"
-
-using std::string;
-using ::google::protobuf::Message;
+#include "caffe/proto/caffe.pb.h"
 
 #define HDF5_NUM_DIMS 4
 
+namespace leveldb {
+// Forward declaration for leveldb::Options to be used in GetlevelDBOptions().
+struct Options;
+}
+
 namespace caffe {
+
+using ::google::protobuf::Message;
+
+inline void MakeTempFilename(string* temp_filename) {
+  temp_filename->clear();
+  *temp_filename = "/tmp/caffe_test.XXXXXX";
+  char* temp_filename_cstr = new char[temp_filename->size()];
+  // NOLINT_NEXT_LINE(runtime/printf)
+  strcpy(temp_filename_cstr, temp_filename->c_str());
+#ifdef _MSC_VER
+  int fd = _mktemp_s(temp_filename_cstr, temp_filename->length()+1);
+#else
+  int fd = mkstemp(temp_filename_cstr);
+#endif
+  CHECK_GE(fd, 0) << "Failed to open a temporary file at: " << *temp_filename;
+  close(fd);
+  *temp_filename = temp_filename_cstr;
+  delete temp_filename_cstr;
+}
+
+inline void MakeTempDir(string* temp_dirname) {
+  temp_dirname->clear();
+  *temp_dirname = "/tmp/caffe_test.XXXXXX";
+  char* temp_dirname_cstr = new char[temp_dirname->size()];
+  // NOLINT_NEXT_LINE(runtime/printf)
+  strcpy(temp_dirname_cstr, temp_dirname->c_str());
+#ifdef _MSC_VER
+  int mkdtemp_result = _mkdir(temp_dirname_cstr);
+  CHECK_NE(mkdtemp_result, 0) << "Failed to open a temporary directory at: " << *temp_dirname;
+#else
+  char* mkdtemp_result = mkdtemp(temp_dirname_cstr);
+  CHECK(mkdtemp_result != NULL)
+      << "Failed to create a temporary directory at: " << *temp_dirname;
+#endif
+  *temp_dirname = temp_dirname_cstr;
+  delete temp_dirname_cstr;
+}
 
 bool ReadProtoFromTextFile(const char* filename, Message* proto);
 
@@ -73,6 +115,7 @@ inline bool ReadImageToDatum(const string& filename, const int label,
   return ReadImageToDatum(filename, label, 0, 0, datum);
 }
 
+leveldb::Options GetLevelDBOptions();
 
 template <typename Dtype>
 void hdf5_load_nd_dataset_helper(

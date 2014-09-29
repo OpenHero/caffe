@@ -21,13 +21,26 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\caffe\blob.cpp" />
     <ClCompile Include="..\..\src\caffe\common.cpp" />
+    <ClCompile Include="..\..\src\caffe\data_transformer.cpp" />
+    <ClCompile Include="..\..\src\caffe\internal_thread.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\absval_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\accuracy_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\argmax_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\base_data_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\bnll_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\concat_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\contrastive_loss_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\conv_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\cudnn_conv_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\cudnn_pooling_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\cudnn_relu_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\cudnn_sigmoid_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\cudnn_softmax_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\cudnn_tanh_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\data_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\dropout_layer.cpp" />
-    <ClCompile Include="..\..\src\caffe\layers\eltwise_product_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\dummy_data_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\eltwise_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\euclidean_loss_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\flatten_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\hdf5_data_layer.cpp" />
@@ -41,16 +54,20 @@
     <ClCompile Include="..\..\src\caffe\layers\lrn_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\memory_data_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\multinomial_logistic_loss_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\mvn_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\neuron_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\pooling_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\power_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\relu_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\sigmoid_cross_entropy_loss_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\sigmoid_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\silence_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\slice_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\softmax_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\softmax_loss_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\split_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\tanh_layer.cpp" />
+    <ClCompile Include="..\..\src\caffe\layers\threshold_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layers\window_data_layer.cpp" />
     <ClCompile Include="..\..\src\caffe\layer_factory.cpp" />
     <ClCompile Include="..\..\src\caffe\net.cpp" />
@@ -66,29 +83,40 @@
     <ClCompile Include="..\..\src\caffe\util\upgrade_proto.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="..\..\src\caffe\layers\absval_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\base_data_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\bnll_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\concat_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\contrastive_loss_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\conv_layer.cu" />
-    <CudaCompile Include="..\..\src\caffe\layers\data_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\cudnn_conv_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\cudnn_pooling_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\cudnn_relu_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\cudnn_sigmoid_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\cudnn_softmax_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\cudnn_tanh_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\dropout_layer.cu" />
-    <CudaCompile Include="..\..\src\caffe\layers\eltwise_product_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\eltwise_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\euclidean_loss_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\flatten_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\hdf5_data_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\hdf5_output_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\im2col_layer.cu" />
-    <CudaCompile Include="..\..\src\caffe\layers\image_data_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\inner_product_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\lrn_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\mvn_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\pooling_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\power_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\relu_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\sigmoid_cross_entropy_loss_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\sigmoid_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\silence_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\slice_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\softmax_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\softmax_loss_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\split_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\layers\tanh_layer.cu" />
-    <CudaCompile Include="..\..\src\caffe\layers\window_data_layer.cu" />
+    <CudaCompile Include="..\..\src\caffe\layers\threshold_layer.cu" />
     <CudaCompile Include="..\..\src\caffe\util\im2col.cu" />
     <CudaCompile Include="..\..\src\caffe\util\math_functions.cu" />
   </ItemGroup>
@@ -100,8 +128,11 @@
     <ClInclude Include="..\..\include\caffe\blob.hpp" />
     <ClInclude Include="..\..\include\caffe\caffe.hpp" />
     <ClInclude Include="..\..\include\caffe\common.hpp" />
+    <ClInclude Include="..\..\include\caffe\common_layers.hpp" />
     <ClInclude Include="..\..\include\caffe\data_layers.hpp" />
+    <ClInclude Include="..\..\include\caffe\data_transformer.hpp" />
     <ClInclude Include="..\..\include\caffe\filler.hpp" />
+    <ClInclude Include="..\..\include\caffe\internal_thread.hpp" />
     <ClInclude Include="..\..\include\caffe\layer.hpp" />
     <ClInclude Include="..\..\include\caffe\loss_layers.hpp" />
     <ClInclude Include="..\..\include\caffe\net.hpp" />
@@ -111,6 +142,8 @@
     <ClInclude Include="..\..\include\caffe\solver.hpp" />
     <ClInclude Include="..\..\include\caffe\syncedmem.hpp" />
     <ClInclude Include="..\..\include\caffe\util\benchmark.hpp" />
+    <ClInclude Include="..\..\include\caffe\util\cudnn.hpp" />
+    <ClInclude Include="..\..\include\caffe\util\device_alternate.hpp" />
     <ClInclude Include="..\..\include\caffe\util\im2col.hpp" />
     <ClInclude Include="..\..\include\caffe\util\insert_splits.hpp" />
     <ClInclude Include="..\..\include\caffe\util\io.hpp" />
@@ -118,10 +151,15 @@
     <ClInclude Include="..\..\include\caffe\util\math_functions.hpp" />
     <ClInclude Include="..\..\include\caffe\util\mkl_alternate.hpp" />
     <ClInclude Include="..\..\include\caffe\util\rng.hpp" />
+    <ClInclude Include="..\..\include\caffe\util\thread.hpp" />
     <ClInclude Include="..\..\include\caffe\util\upgrade_proto.hpp" />
     <ClInclude Include="..\..\include\caffe\vision_layers.hpp" />
     <ClInclude Include="..\..\src\caffe\proto\caffe.pb.h" />
     <ClInclude Include="..\..\src\caffe\proto\caffe_pretty_print.pb.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\include\caffe\CMakeLists.txt" />
+    <Text Include="..\..\src\caffe\CMakeLists.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D2730D78-27AB-4D1C-9484-3FBD17BD5BDB}</ProjectGuid>
@@ -180,7 +218,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>D:\HDF_Group\HDF5\1.8.13\include;D:\leveldb-master\include;D:\pthreads\Pre-built.2\include;D:\opencv\build\include;D:\protobuf-2.5.0\src;D:\glog-0.3.3\src\windows;D:\boost_1_55_x64\boost_1_55_0;C:\Program Files %28x86%29\Intel\Composer XE 2013\mkl\include;..\..\include;$(IncludePath)</IncludePath>
+    <IncludePath>D:\HDF_Group\HDF5\1.8.13\include;D:\leveldb-master\include;D:\pthreads\Pre-built.2\include;D:\opencv\build\include;D:\protobuf-2.5.0\src;D:\glog-0.3.3\src\windows;D:\boost_1_55_x64\boost_1_55_0;C:\Program Files %28x86%29\Intel\Composer XE 2013\mkl\include;..\..\include;D:\gflags\gflags\build\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\HDF_Group\HDF5\1.8.13\lib;F:\project\dl\caffe_gpu\src\caffe\windows\windows;C:\Program Files %28x86%29\Intel\Composer XE 2013\mkl\lib\intel64;C:\Program Files %28x86%29\Microsoft Visual Studio 11.0\Common7\IDE;D:\pthreads\Pre-built.2\lib\x64;D:\protobuf-2.5.0\vsprojects\x64\Debug;D:\opencv\build\x64\vc11\lib;D:\leveldb-master\build\x64\Debug;D:\glog-0.3.3\x64\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -255,13 +293,14 @@
     </Bscmake>
     <PreBuildEvent>
       <Command>echo "Create proto files..."
-cd $(SolutionDir)
-cd ..
-set SRC_DIR=./src/caffe/proto
-echo %SRC_DIR%
-"./windows/protoc.exe" --proto_path=src --cpp_out=src  %SRC_DIR%/caffe.proto
-"./windows/protoc.exe" --proto_path=src --cpp_out=src  %SRC_DIR%/caffe_pretty_print.proto
-cp %SRC_DIR%/*.h ./include/caffe/proto
+echo "md $(SolutionDir)..\include\caffe\proto\"
+md "$(SolutionDir)..\include\caffe\proto\"
+echo "cd  $(SolutionDir)..\src\caffe\proto"
+cd "$(SolutionDir)..\src\caffe\proto"
+"$(SolutionDir)protoc.exe" --proto_path=. --cpp_out=.  caffe.proto
+"$(SolutionDir)protoc.exe" --proto_path=. --cpp_out=.  caffe_pretty_print.proto
+echo "cp *.h $(SolutionDir)..\include\caffe\proto\"
+cp *.h "$(SolutionDir)..\include\caffe\proto\"
 cd $(ProjectDir)
 echo "Create proto files done..."</Command>
     </PreBuildEvent>
