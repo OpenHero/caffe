@@ -125,6 +125,24 @@ class AdaGradSolver : public SGDSolver<Dtype> {
 };
 
 template <typename Dtype>
+class MPISynSolver : public SGDSolver<Dtype> {
+public:
+    explicit MPISynSolver(const SolverParameter& param)
+        : SGDSolver<Dtype>(param) {  }
+    explicit MPISynSolver(const string& param_file)
+        : SGDSolver<Dtype>(param_file) { }
+
+protected:
+    virtual void ComputeUpdateValue();
+    void MPI_SynInit();
+    void MPI_SynBroadCast();
+    void MPI_SynReduce();
+
+    DISABLE_COPY_AND_ASSIGN(MPISynSolver);
+};
+
+
+template <typename Dtype>
 Solver<Dtype>* GetSolver(const SolverParameter& param) {
   SolverParameter_SolverType type = param.solver_type();
 
@@ -135,6 +153,8 @@ Solver<Dtype>* GetSolver(const SolverParameter& param) {
       return new NesterovSolver<Dtype>(param);
   case SolverParameter_SolverType_ADAGRAD:
       return new AdaGradSolver<Dtype>(param);
+  case SolverParameter_SolverType_MPISYN:
+      return new MPISynSolver<Dtype>(param);
   default:
       LOG(FATAL) << "Unknown SolverType: " << type;
   }

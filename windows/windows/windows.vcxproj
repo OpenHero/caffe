@@ -123,6 +123,8 @@
   <ItemGroup>
     <None Include="..\..\Makefile" />
     <None Include="..\..\Makefile.config.example" />
+    <None Include="..\..\src\caffe\proto\caffe.proto" />
+    <None Include="..\..\src\caffe\proto\caffe_pretty_print.proto" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\caffe\blob.hpp" />
@@ -154,8 +156,6 @@
     <ClInclude Include="..\..\include\caffe\util\thread.hpp" />
     <ClInclude Include="..\..\include\caffe\util\upgrade_proto.hpp" />
     <ClInclude Include="..\..\include\caffe\vision_layers.hpp" />
-    <ClInclude Include="..\..\src\caffe\proto\caffe.pb.h" />
-    <ClInclude Include="..\..\src\caffe\proto\caffe_pretty_print.pb.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\include\caffe\CMakeLists.txt" />

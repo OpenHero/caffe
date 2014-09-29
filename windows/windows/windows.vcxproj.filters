@@ -327,14 +327,14 @@
   <ItemGroup>
     <None Include="..\..\Makefile" />
     <None Include="..\..\Makefile.config.example" />
+    <None Include="..\..\src\caffe\proto\caffe.proto">
+      <Filter>src\proto</Filter>
+    </None>
+    <None Include="..\..\src\caffe\proto\caffe_pretty_print.proto">
+      <Filter>src\proto</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\caffe\proto\caffe.pb.h">
-      <Filter>src\proto</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\caffe\proto\caffe_pretty_print.pb.h">
-      <Filter>src\proto</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\caffe\proto\caffe.pb.h">
       <Filter>include\proto</Filter>
     </ClInclude>

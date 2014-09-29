@@ -757,9 +757,152 @@ namespace caffe {
         }
     }
 
+    template <typename Dtype>
+    void MPISynSolver<Dtype>::ComputeUpdateValue() {
+        vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
+        vector<float>& net_params_lr = this->net_->params_lr();
+        vector<float>& net_params_weight_decay = this->net_->params_weight_decay();
+        // get the learning rate
+        Dtype rate = GetLearningRate();
+        if (this->param_.display() && this->iter_ % this->param_.display() == 0) {
+            LOG(INFO) << "Iteration " << this->iter_ << ", lr = " << rate;
+        }
+        Dtype momentum = this->param_.momentum();
+        Dtype weight_decay = this->param_.weight_decay();
+        string regularization_type = this->param_.regularization_type();
+        this->MPI_SynReduce();
+        switch (Caffe::mode()) {
+        case Caffe::CPU:
+            for (int param_id = 0; param_id < net_params.size(); ++param_id) {
+                // Compute the value to history, and then copy them to the blob's diff.
+                Dtype local_rate = rate * net_params_lr[param_id];
+                Dtype local_decay = weight_decay * net_params_weight_decay[param_id];
+
+                if (local_decay) {
+                    if (regularization_type == "L2") {
+                        // add weight decay
+                        caffe_axpy(net_params[param_id]->count(),
+                            local_decay,
+                            net_params[param_id]->cpu_data(),
+                            net_params[param_id]->mutable_cpu_diff());
+                    } else if (regularization_type == "L1") {
+                        caffe_cpu_sign(net_params[param_id]->count(),
+                            net_params[param_id]->cpu_data(),
+                            temp_[param_id]->mutable_cpu_data());
+                        caffe_axpy(net_params[param_id]->count(),
+                            local_decay,
+                            temp_[param_id]->cpu_data(),
+                            net_params[param_id]->mutable_cpu_diff());
+                    } else {
+                        LOG(FATAL) << "Unknown regularization type: " << regularization_type;
+                    }
+                }
+
+                caffe_cpu_axpby(net_params[param_id]->count(), local_rate,
+                    net_params[param_id]->cpu_diff(), momentum,
+                    history_[param_id]->mutable_cpu_data());
+                // copy
+                caffe_copy(net_params[param_id]->count(),
+                    history_[param_id]->cpu_data(),
+                    net_params[param_id]->mutable_cpu_diff());
+            }
+            break;
+        case Caffe::GPU:
+#ifndef CPU_ONLY
+            for (int param_id = 0; param_id < net_params.size(); ++param_id) {
+                // Compute the value to history, and then copy them to the blob's diff.
+                Dtype local_rate = rate * net_params_lr[param_id];
+                Dtype local_decay = weight_decay * net_params_weight_decay[param_id];
+
+                if (local_decay) {
+                    if (regularization_type == "L2") {
+                        // add weight decay
+                        caffe_gpu_axpy(net_params[param_id]->count(),
+                            local_decay,
+                            net_params[param_id]->gpu_data(),
+                            net_params[param_id]->mutable_gpu_diff());
+                    } else if (regularization_type == "L1") {
+                        caffe_gpu_sign(net_params[param_id]->count(),
+                            net_params[param_id]->gpu_data(),
+                            temp_[param_id]->mutable_gpu_data());
+                        caffe_gpu_axpy(net_params[param_id]->count(),
+                            local_decay,
+                            temp_[param_id]->gpu_data(),
+                            net_params[param_id]->mutable_gpu_diff());
+                    } else {
+                        LOG(FATAL) << "Unknown regularization type: " << regularization_type;
+                    }
+                }
+
+                caffe_gpu_axpby(net_params[param_id]->count(), local_rate,
+                    net_params[param_id]->gpu_diff(), momentum,
+                    history_[param_id]->mutable_gpu_data());
+                // copy
+                caffe_copy(net_params[param_id]->count(),
+                    history_[param_id]->gpu_data(),
+                    net_params[param_id]->mutable_gpu_diff());
+            }
+#else
+            NO_GPU;
+#endif
+            break;
+        default:
+            LOG(FATAL) << "Unknown caffe mode: " << Caffe::mode();
+        }
+    }
+
+    template <typename Dtype>
+    void MPISynSolver<Dtype>::MPI_SynInit(){
+
+    }
+    template <typename Dtype>
+    void MPISynSolver<Dtype>::MPI_SynBroadCast() {
+        vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
+
+
+        if (mpi_rank == 0)
+        {  
+            for (int param_id = 0; param_id < net_params.size(); ++param_id) {
+                net_params[param_id]->cpu_data();
+            }
+        }
+        MPI_Bcast(mpi_model.model_ptr, mpi_model.model_size,MPI_FLOAT,0,MPI_COMM_WORLD);//广播数据
+        MPI_Barrier(MPI_COMM_WORLD);//同步
+        if (mpi_rank != 0)
+        {
+            for (int param_id = 0; param_id < net_params.size(); ++param_id) {
+                net_params[param_id]->mutable_gpu_data();
+            }
+        }
+
+    }
+
+    template <typename Dtype>
+    void MPISynSolver<Dtype>::MPI_SynReduce() {
+        vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
+        for (int param_id = 0; param_id < net_params.size(); ++param_id) {
+            net_params[param_id]->cpu_data();
+        }
+        MPI_Reduce(mpi_model.model_ptr, mpi_model_temp.model_ptr,mpi_model.model_size,MPI_FLOAT,MPI_SUM,0,MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);//同步 
+        //          std::cout << "sync ......1......"<<std::endl;
+
+        if (mpi_rank == 0)
+        {
+            for(int i = 0; i < mpi_model.model_size; i++)
+            {
+                mpi_model.model_ptr[i] = mpi_model_temp.model_ptr[i] / mpi_rank_size;
+            }
+            for (int param_id = 0; param_id < net_params.size(); ++param_id) {
+                net_params[param_id]->cpu_data();
+            }
+        }
+    }
+
     INSTANTIATE_CLASS(Solver);
     INSTANTIATE_CLASS(SGDSolver);
     INSTANTIATE_CLASS(NesterovSolver);
     INSTANTIATE_CLASS(AdaGradSolver);
+    INSTANTIATE_CLASS(MPISynSolver);
 
 }  // namespace caffe
