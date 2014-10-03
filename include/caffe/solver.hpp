@@ -3,6 +3,9 @@
 
 #include <string>
 #include <vector>
+#ifdef USE_MPI
+#include <mpi.h>
+#endif // USE_MPI
 
 #include "caffe/net.hpp"
 
@@ -128,15 +131,23 @@ template <typename Dtype>
 class MPISynSolver : public SGDSolver<Dtype> {
 public:
     explicit MPISynSolver(const SolverParameter& param)
-        : SGDSolver<Dtype>(param) {  }
+        : SGDSolver<Dtype>(param) {MPI_SynInit();}
     explicit MPISynSolver(const string& param_file)
-        : SGDSolver<Dtype>(param_file) { }
+        : SGDSolver<Dtype>(param_file) {}
+    virtual void Solve(const char* resume_file = NULL);
 
 protected:
     virtual void ComputeUpdateValue();
     void MPI_SynInit();
     void MPI_SynBroadCast();
     void MPI_SynReduce();
+
+private:
+    int mpi_rank;
+    int mpi_rank_size;
+    shared_ptr<Blob<Dtype> > mpi_buff;
+    shared_ptr<Blob<Dtype> > mpi_buff_temp;
+    int mpi_buff_size;
 
     DISABLE_COPY_AND_ASSIGN(MPISynSolver);
 };

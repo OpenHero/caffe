@@ -853,25 +853,38 @@ namespace caffe {
 
     template <typename Dtype>
     void MPISynSolver<Dtype>::MPI_SynInit(){
+        vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
+        MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+        MPI_Comm_size(MPI_COMM_WORLD,&mpi_rank_size);
 
+        for (int param_id = 0; param_id < net_params.size(); ++param_id) {
+            mpi_buff_size += net_params[param_id]->count();
+        }
+        shared_ptr<Blob<Dtype> > mpi_buff_t(new Blob<Dtype>(1,1,1,mpi_buff_size));
+        shared_ptr<Blob<Dtype> > mpi_buff_t1(new Blob<Dtype>(1,1,1,mpi_buff_size));
+        mpi_buff = mpi_buff_t;
+        mpi_buff_temp = mpi_buff_t1;
     }
     template <typename Dtype>
     void MPISynSolver<Dtype>::MPI_SynBroadCast() {
         vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
 
-
         if (mpi_rank == 0)
         {  
+            int buff_offset = 0;
             for (int param_id = 0; param_id < net_params.size(); ++param_id) {
-                net_params[param_id]->cpu_data();
+                caffe_copy(net_params[param_id]->count(), net_params[param_id]->cpu_data(),mpi_buff->mutable_cpu_data()+buff_offset);
+                buff_offset += net_params[param_id]->count();
             }
         }
-        MPI_Bcast(mpi_model.model_ptr, mpi_model.model_size,MPI_FLOAT,0,MPI_COMM_WORLD);//广播数据
+        MPI_Bcast(mpi_buff->mutable_cpu_data(), mpi_buff_size,MPI_FLOAT,0,MPI_COMM_WORLD);//广播数据
         MPI_Barrier(MPI_COMM_WORLD);//同步
         if (mpi_rank != 0)
         {
+            int buff_offset = 0;
             for (int param_id = 0; param_id < net_params.size(); ++param_id) {
-                net_params[param_id]->mutable_gpu_data();
+                caffe_copy(net_params[param_id]->count(), mpi_buff->cpu_data()+buff_offset, net_params[param_id]->mutable_cpu_data());
+                buff_offset += net_params[param_id]->count();
             }
         }
 
@@ -880,23 +893,112 @@ namespace caffe {
     template <typename Dtype>
     void MPISynSolver<Dtype>::MPI_SynReduce() {
         vector<shared_ptr<Blob<Dtype> > >& net_params = this->net_->params();
+        int buff_offset = 0;
         for (int param_id = 0; param_id < net_params.size(); ++param_id) {
-            net_params[param_id]->cpu_data();
+            caffe_copy(net_params[param_id]->count(), net_params[param_id]->cpu_data(), mpi_buff->mutable_cpu_data()+buff_offset);
+            buff_offset += net_params[param_id]->count();
         }
-        MPI_Reduce(mpi_model.model_ptr, mpi_model_temp.model_ptr,mpi_model.model_size,MPI_FLOAT,MPI_SUM,0,MPI_COMM_WORLD);
+        MPI_Reduce(mpi_buff->mutable_cpu_data(), mpi_buff_temp->mutable_cpu_data(),mpi_buff_size,MPI_FLOAT,MPI_SUM,0,MPI_COMM_WORLD);
         MPI_Barrier(MPI_COMM_WORLD);//同步 
         //          std::cout << "sync ......1......"<<std::endl;
 
         if (mpi_rank == 0)
         {
-            for(int i = 0; i < mpi_model.model_size; i++)
-            {
-                mpi_model.model_ptr[i] = mpi_model_temp.model_ptr[i] / mpi_rank_size;
-            }
+            caffe_set(mpi_buff_size, (Dtype)0, mpi_buff->mutable_cpu_data());
+            caffe_axpy(mpi_buff_size, (Dtype)(1.0f/mpi_rank_size), mpi_buff_temp->cpu_data(), mpi_buff->mutable_cpu_data());
+            int buff_offset = 0;
             for (int param_id = 0; param_id < net_params.size(); ++param_id) {
-                net_params[param_id]->cpu_data();
+                caffe_copy(net_params[param_id]->count(), mpi_buff->cpu_data(), net_params[param_id]->mutable_cpu_data());
+                buff_offset += net_params[param_id]->count();
             }
         }
+    }
+
+    template <typename Dtype>
+    void MPISynSolver<Dtype>::Solve(const char* resume_file) {
+        Caffe::set_phase(Caffe::TRAIN);
+        LOG(INFO) << "Solving " << net_->name();
+        PreSolve();
+
+        iter_ = 0;
+        if (resume_file) {
+            LOG(INFO) << "Restoring previous solver status from " << resume_file;
+            Restore(resume_file);
+        }
+        // Remember the initial iter_ value; will be non-zero if we loaded from a
+        // resume_file above.
+        const int start_iter = iter_;
+
+        // For a network that is trained by the solver, no bottom or top vecs
+        // should be given, and we will just provide dummy vecs.
+        vector<Blob<Dtype>*> bottom_vec;
+        for (; iter_ < param_.max_iter(); ++iter_) {
+            // Save a snapshot if needed.
+            if (param_.snapshot() && iter_ > start_iter &&
+                iter_ % param_.snapshot() == 0) {
+                    Snapshot();
+            }
+
+            if (param_.test_interval() && iter_ % param_.test_interval() == 0
+                && (iter_ > 0 || param_.test_initialization())) {
+                    TestAll();
+            }
+
+            const bool display = param_.display() && iter_ % param_.display() == 0;
+            net_->set_debug_info(display && param_.debug_info());
+            Dtype loss = net_->ForwardBackward(bottom_vec);
+            if (display && mpi_rank == 0) {
+                LOG(INFO) << "Iteration " << iter_ << ", loss = " << loss;
+                const vector<Blob<Dtype>*>& result = net_->output_blobs();
+                int score_index = 0;
+                for (int j = 0; j < result.size(); ++j) {
+                    const Dtype* result_vec = result[j]->cpu_data();
+                    const string& output_name =
+                        net_->blob_names()[net_->output_blob_indices()[j]];
+                    const Dtype loss_weight =
+                        net_->blob_loss_weights()[net_->output_blob_indices()[j]];
+                    for (int k = 0; k < result[j]->count(); ++k) {
+                        ostringstream loss_msg_stream;
+                        if (loss_weight) {
+                            loss_msg_stream << " (* " << loss_weight
+                                << " = " << loss_weight * result_vec[k] << " loss)";
+                        }
+                        LOG(INFO) << "    Train net output #"
+                            << score_index++ << ": " << output_name << " = "
+                            << result_vec[k] << loss_msg_stream.str();
+                    }
+                }
+            }
+
+            ComputeUpdateValue();
+            net_->Update();
+            
+            const bool mpisynupdate = param_.mpisynupdate() && iter_ % param_.mpisynupdate() == 0;
+            net_->set_debug_info(mpisynupdate && param_.debug_info());
+            if (mpisynupdate)
+            {
+                this->MPI_SynReduce();
+                this->MPI_SynBroadCast();
+            }
+        }
+        // Always save a snapshot after optimization, unless overridden by setting
+        // snapshot_after_train := false.
+        if (param_.snapshot_after_train()) { Snapshot(); }
+        // After the optimization is done, run an additional train and test pass to
+        // display the train and test loss/outputs if appropriate (based on the
+        // display and test_interval settings, respectively).  Unlike in the rest of
+        // training, for the train net we only run a forward pass as we've already
+        // updated the parameters "max_iter" times -- this final pass is only done to
+        // display the loss, which is computed in the forward pass.
+        if (param_.display() && iter_ % param_.display() == 0) {
+            Dtype loss;
+            net_->Forward(bottom_vec, &loss);
+            LOG(INFO) << "Iteration " << iter_ << ", loss = " << loss;
+        }
+        if (param_.test_interval() && iter_ % param_.test_interval() == 0) {
+            TestAll();
+        }
+        LOG(INFO) << "Optimization Done.";
     }
 
     INSTANTIATE_CLASS(Solver);

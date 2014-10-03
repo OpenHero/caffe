@@ -4,6 +4,9 @@
 #include <map>
 #include <string>
 #include <vector>
+#ifdef USE_MPI
+#include <mpi.h>
+#endif // USE_MPI
 
 #include "caffe/caffe.hpp"
 
@@ -267,6 +270,9 @@ int time() {
 RegisterBrewFunction(time);
 
 int main(int argc, char** argv) {
+#ifdef USE_MPI
+    MPI_Init(&argc, &argv);
+#endif
   // Print output to stderr (while still logging).
   FLAGS_alsologtostderr = 1;
   // Usage message.
@@ -284,4 +290,8 @@ int main(int argc, char** argv) {
   } else {
     gflags::ShowUsageWithFlagsRestrict(argv[0], "tools/caffe");
   }
+
+#ifdef USE_MPI
+  MPI_Finalize();
+#endif
 }

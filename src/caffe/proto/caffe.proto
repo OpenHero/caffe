@@ -158,6 +158,9 @@ message SolverParameter {
 
   // If false, don't save a snapshot after training finishes.
   optional bool snapshot_after_train = 28 [default = true];
+
+  // mpi synchronize 
+  optional int32 mpisynupdate = 33 [default = 1];
 }
 
 // A message that stores the solver snapshots
