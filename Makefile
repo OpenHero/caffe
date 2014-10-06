@@ -257,9 +257,11 @@ ifdef CUSTOM_CXX
 endif
 
 ifeq ($(USE_MPI),1)
+	CXX := /usr/bin/mpicxx
 	COMMON_FLAGS += -DUSE_MPI
 	MPI_INCLUDE = /usr/local/include
 	MPI_LIB = /usr/local/lib
+	LIBRARIES += mpi mpi_cxx
 endif
 INCLUDE_DIRS += $(MPI_INCLUDE)
 LIBRARY_DIRS += $(MPI_LIB)
