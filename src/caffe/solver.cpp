@@ -770,7 +770,6 @@ namespace caffe {
         Dtype momentum = this->param_.momentum();
         Dtype weight_decay = this->param_.weight_decay();
         string regularization_type = this->param_.regularization_type();
-        this->MPI_SynReduce();
         switch (Caffe::mode()) {
         case Caffe::CPU:
             for (int param_id = 0; param_id < net_params.size(); ++param_id) {
