@@ -21,7 +21,7 @@ DataLayer<Dtype>::~DataLayer<Dtype>() {
   switch (this->layer_param_.data_param().backend()) {
   case DataParameter_DB_LEVELDB:
     break;  // do nothing
-#ifdef LMDB
+#ifdef USE_LMDB
   case DataParameter_DB_LMDB:
     mdb_cursor_close(mdb_cursor_);
     mdb_close(mdb_env_, mdb_dbi_);
@@ -55,7 +55,7 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
     iter_->SeekToFirst();
     }
     break;
-#ifdef LMDB
+#ifdef USE_LMDB
   case DataParameter_DB_LMDB:
     CHECK_EQ(mdb_env_create(&mdb_env_), MDB_SUCCESS) << "mdb_env_create failed";
     CHECK_EQ(mdb_env_set_mapsize(mdb_env_, 1099511627776), MDB_SUCCESS);  // 1TB
@@ -89,7 +89,7 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
           iter_->SeekToFirst();
         }
         break;
-#ifdef LMDB
+#ifdef USE_LMDB
       case DataParameter_DB_LMDB:
         if (mdb_cursor_get(mdb_cursor_, &mdb_key_, &mdb_value_, MDB_NEXT)
             != MDB_SUCCESS) {
@@ -109,7 +109,7 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   case DataParameter_DB_LEVELDB:
     datum.ParseFromString(iter_->value().ToString());
     break;
-#ifdef LMDB
+#ifdef USE_LMDB
   case DataParameter_DB_LMDB:
     datum.ParseFromArray(mdb_value_.mv_data, mdb_value_.mv_size);
     break;
@@ -168,7 +168,7 @@ void DataLayer<Dtype>::InternalThreadEntry() {
       CHECK(iter_->Valid());
       datum.ParseFromString(iter_->value().ToString());
       break;
-#ifdef LMDB
+#ifdef USE_LMDB
     case DataParameter_DB_LMDB:
       CHECK_EQ(mdb_cursor_get(mdb_cursor_, &mdb_key_,
               &mdb_value_, MDB_GET_CURRENT), MDB_SUCCESS);
@@ -197,7 +197,7 @@ void DataLayer<Dtype>::InternalThreadEntry() {
         iter_->SeekToFirst();
       }
       break;
-#ifdef LMDB
+#ifdef USE_LMDB
     case DataParameter_DB_LMDB:
       if (mdb_cursor_get(mdb_cursor_, &mdb_key_,
               &mdb_value_, MDB_NEXT) != MDB_SUCCESS) {

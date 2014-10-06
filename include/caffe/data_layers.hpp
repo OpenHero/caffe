@@ -8,7 +8,7 @@
 #include "boost/scoped_ptr.hpp"
 #include "hdf5.h"
 #include "leveldb/db.h"
-#ifdef LMDB
+#ifdef USE_LMDB
 #include "lmdb.h"
 #endif
 
@@ -119,8 +119,8 @@ class DataLayer : public BasePrefetchingDataLayer<Dtype> {
   // LEVELDB
   shared_ptr<leveldb::DB> db_;
   shared_ptr<leveldb::Iterator> iter_;
-#ifdef LMDB
-  // LMDB
+#ifdef USE_LMDB
+  // USE_LMDB
   MDB_env* mdb_env_;
   MDB_dbi mdb_dbi_;
   MDB_txn* mdb_txn_;
