@@ -948,7 +948,7 @@ namespace caffe {
             this->net_->set_debug_info(display && this->param_.debug_info());
             Dtype loss = this->net_->ForwardBackward(bottom_vec);
             if (display && mpi_rank == 0) {
-                LOG(INFO) << "Iteration " << this->iter_ << ", loss = " << loss;
+                LOG(INFO) << "MPI iteration " << this->iter_ << ", loss = " << loss;
                 const vector<Blob<Dtype>*>& result = this->net_->output_blobs();
                 int score_index = 0;
                 for (int j = 0; j < result.size(); ++j) {
@@ -963,7 +963,7 @@ namespace caffe {
                             loss_msg_stream << " (* " << loss_weight
                                 << " = " << loss_weight * result_vec[k] << " loss)";
                         }
-                        LOG(INFO) << "    Train net output #"
+                        LOG(INFO) << "    MPI train net output #"
                             << score_index++ << ": " << output_name << " = "
                             << result_vec[k] << loss_msg_stream.str();
                     }

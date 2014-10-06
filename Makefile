@@ -256,6 +256,10 @@ ifdef CUSTOM_CXX
 	CXX := $(CUSTOM_CXX)
 endif
 
+ifeq ($(USE_LMDB),1)	
+	COMMON_FLAGS += -DUSE_LMDB
+endif
+
 ifeq ($(USE_MPI),1)
 	CXX := /usr/bin/mpicxx
 	COMMON_FLAGS += -DUSE_MPI
