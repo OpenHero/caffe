@@ -256,6 +256,15 @@ ifdef CUSTOM_CXX
 	CXX := $(CUSTOM_CXX)
 endif
 
+ifeq ($(USE_MPI),1)
+	COMMON_FLAGS += -DUSE_MPI
+	MPI_INCLUDE = /usr/local/include
+	MPI_LIB = /usr/local/lib
+endif
+INCLUDE_DIRS += $(MPI_INCLUDE)
+LIBRARY_DIRS += $(MPI_LIB)
+
+
 # Debugging
 ifeq ($(DEBUG), 1)
 	COMMON_FLAGS += -DDEBUG -g -O0

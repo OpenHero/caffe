@@ -763,7 +763,7 @@ namespace caffe {
         vector<float>& net_params_lr = this->net_->params_lr();
         vector<float>& net_params_weight_decay = this->net_->params_weight_decay();
         // get the learning rate
-        Dtype rate = GetLearningRate();
+        Dtype rate = this->GetLearningRate();
         if (this->param_.display() && this->iter_ % this->param_.display() == 0) {
             LOG(INFO) << "Iteration " << this->iter_ << ", lr = " << rate;
         }
@@ -788,10 +788,10 @@ namespace caffe {
                     } else if (regularization_type == "L1") {
                         caffe_cpu_sign(net_params[param_id]->count(),
                             net_params[param_id]->cpu_data(),
-                            temp_[param_id]->mutable_cpu_data());
+                            this->temp_[param_id]->mutable_cpu_data());
                         caffe_axpy(net_params[param_id]->count(),
                             local_decay,
-                            temp_[param_id]->cpu_data(),
+                            this->temp_[param_id]->cpu_data(),
                             net_params[param_id]->mutable_cpu_diff());
                     } else {
                         LOG(FATAL) << "Unknown regularization type: " << regularization_type;
@@ -800,10 +800,10 @@ namespace caffe {
 
                 caffe_cpu_axpby(net_params[param_id]->count(), local_rate,
                     net_params[param_id]->cpu_diff(), momentum,
-                    history_[param_id]->mutable_cpu_data());
+                    this->history_[param_id]->mutable_cpu_data());
                 // copy
                 caffe_copy(net_params[param_id]->count(),
-                    history_[param_id]->cpu_data(),
+                    this->history_[param_id]->cpu_data(),
                     net_params[param_id]->mutable_cpu_diff());
             }
             break;
@@ -824,10 +824,10 @@ namespace caffe {
                     } else if (regularization_type == "L1") {
                         caffe_gpu_sign(net_params[param_id]->count(),
                             net_params[param_id]->gpu_data(),
-                            temp_[param_id]->mutable_gpu_data());
+                            this->temp_[param_id]->mutable_gpu_data());
                         caffe_gpu_axpy(net_params[param_id]->count(),
                             local_decay,
-                            temp_[param_id]->gpu_data(),
+                            this->temp_[param_id]->gpu_data(),
                             net_params[param_id]->mutable_gpu_diff());
                     } else {
                         LOG(FATAL) << "Unknown regularization type: " << regularization_type;
@@ -836,10 +836,10 @@ namespace caffe {
 
                 caffe_gpu_axpby(net_params[param_id]->count(), local_rate,
                     net_params[param_id]->gpu_diff(), momentum,
-                    history_[param_id]->mutable_gpu_data());
+                    this->history_[param_id]->mutable_gpu_data());
                 // copy
                 caffe_copy(net_params[param_id]->count(),
-                    history_[param_id]->gpu_data(),
+                    this->history_[param_id]->gpu_data(),
                     net_params[param_id]->mutable_gpu_diff());
             }
 #else
@@ -917,46 +917,46 @@ namespace caffe {
     template <typename Dtype>
     void MPISynSolver<Dtype>::Solve(const char* resume_file) {
         Caffe::set_phase(Caffe::TRAIN);
-        LOG(INFO) << "Solving " << net_->name();
-        PreSolve();
+        LOG(INFO) << "Solving " << this->net_->name();
+        this->PreSolve();
 
-        iter_ = 0;
+        this->iter_ = 0;
         if (resume_file) {
             LOG(INFO) << "Restoring previous solver status from " << resume_file;
-            Restore(resume_file);
+            this->Restore(resume_file);
         }
         // Remember the initial iter_ value; will be non-zero if we loaded from a
         // resume_file above.
-        const int start_iter = iter_;
+        const int start_iter = this->iter_;
 
         // For a network that is trained by the solver, no bottom or top vecs
         // should be given, and we will just provide dummy vecs.
         vector<Blob<Dtype>*> bottom_vec;
-        for (; iter_ < param_.max_iter(); ++iter_) {
+        for (; this->iter_ < this->param_.max_iter(); ++this->iter_) {
             // Save a snapshot if needed.
-            if (param_.snapshot() && iter_ > start_iter &&
-                iter_ % param_.snapshot() == 0) {
-                    Snapshot();
+            if (this->param_.snapshot() && this->iter_ > start_iter &&
+                this->iter_ % this->param_.snapshot() == 0) {
+                    this->Snapshot();
             }
 
-            if (param_.test_interval() && iter_ % param_.test_interval() == 0
-                && (iter_ > 0 || param_.test_initialization())) {
-                    TestAll();
+            if (this->param_.test_interval() && this->iter_ % this->param_.test_interval() == 0
+                && (this->iter_ > 0 || this->param_.test_initialization())) {
+                    this->TestAll();
             }
 
-            const bool display = param_.display() && iter_ % param_.display() == 0;
-            net_->set_debug_info(display && param_.debug_info());
-            Dtype loss = net_->ForwardBackward(bottom_vec);
+            const bool display = this->param_.display() && this->iter_ % this->param_.display() == 0;
+            this->net_->set_debug_info(display && this->param_.debug_info());
+            Dtype loss = this->net_->ForwardBackward(bottom_vec);
             if (display && mpi_rank == 0) {
-                LOG(INFO) << "Iteration " << iter_ << ", loss = " << loss;
-                const vector<Blob<Dtype>*>& result = net_->output_blobs();
+                LOG(INFO) << "Iteration " << this->iter_ << ", loss = " << loss;
+                const vector<Blob<Dtype>*>& result = this->net_->output_blobs();
                 int score_index = 0;
                 for (int j = 0; j < result.size(); ++j) {
                     const Dtype* result_vec = result[j]->cpu_data();
                     const string& output_name =
-                        net_->blob_names()[net_->output_blob_indices()[j]];
+                        this->net_->blob_names()[this->net_->output_blob_indices()[j]];
                     const Dtype loss_weight =
-                        net_->blob_loss_weights()[net_->output_blob_indices()[j]];
+                        this->net_->blob_loss_weights()[this->net_->output_blob_indices()[j]];
                     for (int k = 0; k < result[j]->count(); ++k) {
                         ostringstream loss_msg_stream;
                         if (loss_weight) {
@@ -971,10 +971,10 @@ namespace caffe {
             }
 
             ComputeUpdateValue();
-            net_->Update();
+            this->net_->Update();
             
-            const bool mpisynupdate = param_.mpisynupdate() && iter_ % param_.mpisynupdate() == 0;
-            net_->set_debug_info(mpisynupdate && param_.debug_info());
+            const bool mpisynupdate = this->param_.mpisynupdate() && this->iter_ % this->param_.mpisynupdate() == 0;
+            this->net_->set_debug_info(mpisynupdate && this->param_.debug_info());
             if (mpisynupdate)
             {
                 this->MPI_SynReduce();
@@ -983,20 +983,20 @@ namespace caffe {
         }
         // Always save a snapshot after optimization, unless overridden by setting
         // snapshot_after_train := false.
-        if (param_.snapshot_after_train()) { Snapshot(); }
+        if (this->param_.snapshot_after_train()) { this->Snapshot(); }
         // After the optimization is done, run an additional train and test pass to
         // display the train and test loss/outputs if appropriate (based on the
         // display and test_interval settings, respectively).  Unlike in the rest of
         // training, for the train net we only run a forward pass as we've already
         // updated the parameters "max_iter" times -- this final pass is only done to
         // display the loss, which is computed in the forward pass.
-        if (param_.display() && iter_ % param_.display() == 0) {
+        if (this->param_.display() && this->iter_ % this->param_.display() == 0) {
             Dtype loss;
-            net_->Forward(bottom_vec, &loss);
-            LOG(INFO) << "Iteration " << iter_ << ", loss = " << loss;
+            this->net_->Forward(bottom_vec, &loss);
+            LOG(INFO) << "Iteration " << this->iter_ << ", loss = " << loss;
         }
-        if (param_.test_interval() && iter_ % param_.test_interval() == 0) {
-            TestAll();
+        if (this->param_.test_interval() && this->iter_ % this->param_.test_interval() == 0) {
+            this->TestAll();
         }
         LOG(INFO) << "Optimization Done.";
     }
